@@ -1,0 +1,246 @@
+<div class="page-container">
+
+  <mat-toolbar color="primary">
+    <button mat-icon-button (click)="volver()">
+      <mat-icon>arrow_back</mat-icon>
+    </button>
+    <span>Detalle de Solicitud</span>
+    @if (solicitud) {
+      <span class="spacer"></span>
+      <span class="chip" [class]="colorEstado(solicitud.estado)">
+        {{ solicitud.estado }}
+      </span>
+    }
+  </mat-toolbar>
+
+  @if (cargando) {
+    <div class="spinner-container">
+      <mat-spinner></mat-spinner>
+    </div>
+  }
+
+  @if (!cargando && solicitud) {
+    <div class="content">
+
+      <!-- Info principal -->
+      <mat-card class="info-card">
+        <mat-card-header>
+          <mat-card-title>Información de la solicitud</mat-card-title>
+        </mat-card-header>
+        <mat-card-content>
+          <div class="info-grid">
+            <div class="info-item">
+              <span class="label">Tipo</span>
+              <span class="value">{{ solicitud.tipoSolicitud }}</span>
+            </div>
+            <div class="info-item">
+              <span class="label">Prioridad</span>
+              <span class="chip" [class]="colorPrioridad(solicitud.prioridad)">
+                {{ solicitud.prioridad }}
+              </span>
+            </div>
+            <div class="info-item">
+              <span class="label">Canal</span>
+              <span class="value">{{ solicitud.canalOrigen }}</span>
+            </div>
+            <div class="info-item">
+              <span class="label">Solicitante</span>
+              <span class="value">{{ solicitud.nombreSolicitante }}</span>
+            </div>
+            <div class="info-item">
+              <span class="label">Responsable</span>
+              <span class="value">{{ solicitud.nombreResponsable || 'Sin asignar' }}</span>
+            </div>
+            <div class="info-item">
+              <span class="label">Fecha registro</span>
+              <span class="value">{{ solicitud.fechaRegistro | date:'dd/MM/yyyy HH:mm' }}</span>
+            </div>
+            @if (solicitud.fechaCierre) {
+              <div class="info-item">
+                <span class="label">Fecha cierre</span>
+                <span class="value">{{ solicitud.fechaCierre | date:'dd/MM/yyyy HH:mm' }}</span>
+              </div>
+            }
+          </div>
+
+          <mat-divider class="divider"></mat-divider>
+
+          <div class="descripcion">
+            <span class="label">Descripción</span>
+            <p>{{ solicitud.descripcion }}</p>
+          </div>
+
+          @if (solicitud.justificacionPrioridad) {
+            <div class="descripcion">
+              <span class="label">Justificación de prioridad</span>
+              <p>{{ solicitud.justificacionPrioridad }}</p>
+            </div>
+          }
+
+          @if (solicitud.observacionCierre) {
+            <div class="descripcion">
+              <span class="label">Observación de cierre</span>
+              <p>{{ solicitud.observacionCierre }}</p>
+            </div>
+          }
+
+        </mat-card-content>
+      </mat-card>
+
+      <!-- Acciones -->
+      @if (solicitud.estado !== 'CERRADA') {
+        <mat-card class="acciones-card">
+          <mat-card-header>
+            <mat-card-title>Acciones</mat-card-title>
+          </mat-card-header>
+          <mat-card-content>
+
+            <!-- Clasificar -->
+            @if (puedeClasificar()) {
+              <mat-expansion-panel>
+                <mat-expansion-panel-header>
+                  <mat-panel-title>
+                    <mat-icon>category</mat-icon>
+                    Clasificar solicitud
+                  </mat-panel-title>
+                </mat-expansion-panel-header>
+                <form [formGroup]="formClasificar">
+                  <mat-form-field appearance="outline" class="full-width">
+                    <mat-label>Tipo de solicitud</mat-label>
+                    <mat-select formControlName="tipoSolicitud">
+                      @for (t of tipos; track t) {
+                        <mat-option [value]="t">{{ t }}</mat-option>
+                      }
+                    </mat-select>
+                  </mat-form-field>
+                  <mat-form-field appearance="outline" class="full-width">
+                    <mat-label>Justificación de prioridad</mat-label>
+                    <textarea matInput formControlName="justificacionPrioridad"
+                              rows="3"></textarea>
+                  </mat-form-field>
+                  <button mat-raised-button color="primary"
+                          (click)="clasificar()" [disabled]="guardando">
+                    Clasificar
+                  </button>
+                </form>
+              </mat-expansion-panel>
+            }
+
+            <!-- Asignar -->
+            @if (puedeAsignar()) {
+              <mat-expansion-panel>
+                <mat-expansion-panel-header>
+                  <mat-panel-title>
+                    <mat-icon>person_add</mat-icon>
+                    Asignar responsable
+                  </mat-panel-title>
+                </mat-expansion-panel-header>
+                <form [formGroup]="formAsignar">
+                  <mat-form-field appearance="outline" class="full-width">
+                    <mat-label>Responsable</mat-label>
+                    <mat-select formControlName="responsableId">
+                      @for (r of responsables; track r.id) {
+                        <mat-option [value]="r.id">
+                          {{ r.nombre }} {{ r.apellido }}
+                        </mat-option>
+                      }
+                    </mat-select>
+                  </mat-form-field>
+                  <button mat-raised-button color="primary"
+                          (click)="asignar()" [disabled]="guardando">
+                    Asignar
+                  </button>
+                </form>
+              </mat-expansion-panel>
+            }
+
+            <!-- Cambiar estado -->
+            @if (puedeCambiarEstado()) {
+              <mat-expansion-panel>
+                <mat-expansion-panel-header>
+                  <mat-panel-title>
+                    <mat-icon>swap_horiz</mat-icon>
+                    Cambiar estado
+                  </mat-panel-title>
+                </mat-expansion-panel-header>
+                <form [formGroup]="formEstado">
+                  <mat-form-field appearance="outline" class="full-width">
+                    <mat-label>Nuevo estado</mat-label>
+                    <mat-select formControlName="nuevoEstado">
+                      @for (e of estados; track e) {
+                        <mat-option [value]="e">{{ e }}</mat-option>
+                      }
+                    </mat-select>
+                  </mat-form-field>
+                  <mat-form-field appearance="outline" class="full-width">
+                    <mat-label>Observaciones</mat-label>
+                    <textarea matInput formControlName="observaciones" rows="3"></textarea>
+                  </mat-form-field>
+                  <button mat-raised-button color="accent"
+                          (click)="cambiarEstado()" [disabled]="guardando">
+                    Actualizar estado
+                  </button>
+                </form>
+              </mat-expansion-panel>
+            }
+
+            <!-- Cerrar -->
+            @if (puedeCerrar()) {
+              <mat-expansion-panel>
+                <mat-expansion-panel-header>
+                  <mat-panel-title>
+                    <mat-icon>lock</mat-icon>
+                    Cerrar solicitud
+                  </mat-panel-title>
+                </mat-expansion-panel-header>
+                <form [formGroup]="formCerrar">
+                  <mat-form-field appearance="outline" class="full-width">
+                    <mat-label>Observación de cierre</mat-label>
+                    <textarea matInput formControlName="observacionCierre"
+                              rows="3"></textarea>
+                  </mat-form-field>
+                  <button mat-raised-button color="warn"
+                          (click)="cerrar()" [disabled]="guardando">
+                    Cerrar solicitud
+                  </button>
+                </form>
+              </mat-expansion-panel>
+            }
+
+          </mat-card-content>
+        </mat-card>
+      }
+
+      <!-- Historial -->
+      <mat-card class="historial-card">
+        <mat-card-header>
+          <mat-card-title>
+            <mat-icon>history</mat-icon>
+            Historial de acciones
+          </mat-card-title>
+        </mat-card-header>
+        <mat-card-content>
+          @if (historial.length === 0) {
+            <p class="sin-historial">Sin historial disponible</p>
+          }
+          <mat-list>
+            @for (h of historial; track h.id) {
+              <mat-list-item class="historial-item">
+                <mat-icon matListItemIcon color="primary">radio_button_checked</mat-icon>
+                <div matListItemTitle>{{ h.accionRealizada }}</div>
+                <div matListItemLine>{{ h.observaciones }}</div>
+                <div matListItemLine class="historial-meta">
+                  <span>{{ h.nombreUsuario }}</span>
+                  <span>{{ h.fechaAccion | date:'dd/MM/yyyy HH:mm' }}</span>
+                </div>
+              </mat-list-item>
+              <mat-divider></mat-divider>
+            }
+          </mat-list>
+        </mat-card-content>
+      </mat-card>
+
+    </div>
+  }
+
+</div>

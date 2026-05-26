@@ -1,0 +1,146 @@
+<div class="page-container">
+
+  <!-- Toolbar -->
+  <mat-toolbar color="primary">
+    <button mat-icon-button (click)="volver()">
+      <mat-icon>arrow_back</mat-icon>
+    </button>
+    <span>Solicitudes</span>
+    <span class="spacer"></span>
+    <span class="total-badge">{{ totalElements }} solicitudes</span>
+  </mat-toolbar>
+
+  <!-- Filtros -->
+  <mat-card class="filtros-card">
+    <mat-card-content>
+      <div class="filtros-grid">
+
+        <mat-form-field appearance="outline">
+          <mat-label>Estado</mat-label>
+          <mat-select [(ngModel)]="filtroEstado" (ngModelChange)="cargar()">
+            <mat-option value="">Todos</mat-option>
+            @for (e of estados; track e) {
+              <mat-option [value]="e">{{ e }}</mat-option>
+            }
+          </mat-select>
+        </mat-form-field>
+
+        <mat-form-field appearance="outline">
+          <mat-label>Tipo</mat-label>
+          <mat-select [(ngModel)]="filtroTipo" (ngModelChange)="cargar()">
+            <mat-option value="">Todos</mat-option>
+            @for (t of tipos; track t) {
+              <mat-option [value]="t">{{ t }}</mat-option>
+            }
+          </mat-select>
+        </mat-form-field>
+
+        <mat-form-field appearance="outline">
+          <mat-label>Prioridad</mat-label>
+          <mat-select [(ngModel)]="filtroPrioridad" (ngModelChange)="cargar()">
+            <mat-option value="">Todas</mat-option>
+            @for (p of prioridades; track p) {
+              <mat-option [value]="p">{{ p }}</mat-option>
+            }
+          </mat-select>
+        </mat-form-field>
+
+        <button mat-stroked-button (click)="limpiarFiltros()">
+          <mat-icon>clear</mat-icon>
+          Limpiar
+        </button>
+
+      </div>
+    </mat-card-content>
+  </mat-card>
+
+  <!-- Tabla -->
+  <mat-card class="tabla-card">
+    <mat-card-content>
+
+      @if (cargando) {
+        <div class="spinner-container">
+          <mat-spinner diameter="40"></mat-spinner>
+        </div>
+      }
+
+      @if (!cargando) {
+        <table mat-table [dataSource]="solicitudes" class="tabla">
+
+          <!-- Estado -->
+          <ng-container matColumnDef="estado">
+            <th mat-header-cell *matHeaderCellDef>Estado</th>
+            <td mat-cell *matCellDef="let s">
+              <span class="chip" [class]="colorEstado(s.estado)">
+                {{ s.estado }}
+              </span>
+            </td>
+          </ng-container>
+
+          <!-- Tipo -->
+          <ng-container matColumnDef="tipo">
+            <th mat-header-cell *matHeaderCellDef>Tipo</th>
+            <td mat-cell *matCellDef="let s">{{ s.tipoSolicitud }}</td>
+          </ng-container>
+
+          <!-- Prioridad -->
+          <ng-container matColumnDef="prioridad">
+            <th mat-header-cell *matHeaderCellDef>Prioridad</th>
+            <td mat-cell *matCellDef="let s">
+              <span class="chip" [class]="colorPrioridad(s.prioridad)">
+                {{ s.prioridad }}
+              </span>
+            </td>
+          </ng-container>
+
+          <!-- Solicitante -->
+          <ng-container matColumnDef="solicitante">
+            <th mat-header-cell *matHeaderCellDef>Solicitante</th>
+            <td mat-cell *matCellDef="let s">{{ s.nombreSolicitante }}</td>
+          </ng-container>
+
+          <!-- Fecha -->
+          <ng-container matColumnDef="fecha">
+            <th mat-header-cell *matHeaderCellDef>Fecha</th>
+            <td mat-cell *matCellDef="let s">
+              {{ s.fechaRegistro | date:'dd/MM/yyyy HH:mm' }}
+            </td>
+          </ng-container>
+
+          <!-- Acciones -->
+          <ng-container matColumnDef="acciones">
+            <th mat-header-cell *matHeaderCellDef>Acciones</th>
+            <td mat-cell *matCellDef="let s">
+              <button mat-icon-button color="primary"
+                      (click)="verDetalle(s.id)"
+                      matTooltip="Ver detalle">
+                <mat-icon>visibility</mat-icon>
+              </button>
+            </td>
+          </ng-container>
+
+          <tr mat-header-row *matHeaderRowDef="columnas"></tr>
+          <tr mat-row *matRowDef="let row; columns: columnas;"
+          class="tabla-fila" (click)="verDetalle(row.id)" style="cursor:pointer"></tr>
+
+        </table>
+
+        @if (solicitudes.length === 0) {
+          <div class="sin-datos">
+            <mat-icon>inbox</mat-icon>
+            <p>No hay solicitudes con los filtros aplicados</p>
+          </div>
+        }
+
+        <mat-paginator
+          [length]="totalElements"
+          [pageSize]="pageSize"
+          [pageSizeOptions]="[5, 10, 20]"
+          (page)="cambiarPagina($event)">
+        </mat-paginator>
+      }
+
+    </mat-card-content>
+  </mat-card>
+
+</div>

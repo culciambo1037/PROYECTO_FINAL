@@ -1,0 +1,55 @@
+<div class="login-container">
+  <mat-card class="login-card">
+
+    <mat-card-header>
+      <div class="header-content">
+        <h1>Sistema de Triage Académico</h1>
+        <p>Universidad del Quindío</p>
+      </div>
+    </mat-card-header>
+
+    <mat-card-content>
+      <form [formGroup]="form" (ngSubmit)="iniciarSesion()">
+
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Correo institucional</mat-label>
+          <input matInput formControlName="correo" type="email"
+                 placeholder="usuario@uqvirtual.edu.co">
+          <mat-icon matSuffix>email</mat-icon>
+          <mat-error *ngIf="form.get('correo')?.hasError('required')">
+            El correo es obligatorio
+          </mat-error>
+          <mat-error *ngIf="form.get('correo')?.hasError('email')">
+            Formato de correo inválido
+          </mat-error>
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Contraseña</mat-label>
+          <input matInput formControlName="password"
+                 [type]="mostrarPassword ? 'text' : 'password'">
+          <button mat-icon-button matSuffix type="button"
+                  (click)="mostrarPassword = !mostrarPassword">
+            <mat-icon>{{ mostrarPassword ? 'visibility_off' : 'visibility' }}</mat-icon>
+          </button>
+          <mat-error *ngIf="form.get('password')?.hasError('required')">
+            La contraseña es obligatoria
+          </mat-error>
+        </mat-form-field>
+
+        <div class="error-message" *ngIf="error">
+          <mat-icon>error</mat-icon>
+          {{ error }}
+        </div>
+
+        <button mat-raised-button color="primary" type="submit"
+                class="full-width login-btn" [disabled]="cargando">
+          <mat-spinner diameter="20" *ngIf="cargando"></mat-spinner>
+          <span *ngIf="!cargando">Iniciar sesión</span>
+        </button>
+
+      </form>
+    </mat-card-content>
+
+  </mat-card>
+</div>

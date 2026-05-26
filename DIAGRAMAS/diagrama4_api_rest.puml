@@ -1,0 +1,82 @@
+@startuml diagrama4_api_rest
+title Contratos API REST — Sistema de Triage Académico\nProgramación Avanzada · Universidad del Quindío · Hito 1
+
+skinparam {
+  BackgroundColor #F4F8FC
+  BorderColor #444444
+  FontSize 11
+  ArrowColor #1B4F8A
+  defaultTextAlignment left
+}
+
+skinparam rectangle {
+  BackgroundColor #EBF5FB
+  BorderColor #444444
+  FontSize 12
+}
+
+' ─────────────────────────────────────────────
+' GRUPO: /api/auth
+' ─────────────────────────────────────────────
+package "/api/auth  —  Autenticación" <<Rectangle>> {
+  rectangle "POST  /api/auth/login\n─────────────────────────────────────────────\nBody:     { correo, password }\nResponse: 200: {token, rol, nombre}  |  401\nRoles:    PUBLIC\nRF:       RF-13" as auth_login #DCEEFF
+  rectangle "POST  /api/auth/logout\n─────────────────────────────────────────────\nBody:     Authorization: Bearer <token>\nResponse: 200: {mensaje}\nRoles:    Todos los roles\nRF:       RF-13" as auth_logout #DCEEFF
+}
+
+' ─────────────────────────────────────────────
+' GRUPO: /api/solicitudes
+' ─────────────────────────────────────────────
+package "/api/solicitudes  —  Gestión de Solicitudes" <<Rectangle>> {
+  rectangle "POST  /api/solicitudes\n─────────────────────────────────────────────\nBody:     { descripcion, tipoSolicitud, canalOrigen, solicitanteId }\nResponse: 201: SolicitudDTO  |  400\nRoles:    ESTUDIANTE / RESPONSABLE / ADMIN\nRF:       RF-01" as sol_post #DCEEFF
+
+  rectangle "GET  /api/solicitudes\n─────────────────────────────────────────────\nParams:   ?estado= &tipo= &prioridad= &responsableId= &page= &size=\nResponse: 200: Page<SolicitudDTO>\nRoles:    RESPONSABLE / ADMIN\nRF:       RF-07" as sol_get #DCEEFF
+
+  rectangle "GET  /api/solicitudes/{id}\n─────────────────────────────────────────────\nParams:   —\nResponse: 200: SolicitudDTO  |  404\nRoles:    ESTUDIANTE* / RESPONSABLE / ADMIN\nRF:       RF-07" as sol_get_id #DCEEFF
+
+  rectangle "PATCH  /api/solicitudes/{id}/clasificar\n─────────────────────────────────────────────\nBody:     { tipoSolicitud, prioridad, justificacionPrioridad }\nResponse: 200: SolicitudDTO  |  409\nRoles:    RESPONSABLE / ADMIN\nRF:       RF-02, RF-03" as sol_clasificar #FFE0C0
+
+  rectangle "PATCH  /api/solicitudes/{id}/asignar\n─────────────────────────────────────────────\nBody:     { responsableId }\nResponse: 200: SolicitudDTO  |  400\nRoles:    ADMIN\nRF:       RF-05" as sol_asignar #FFE0C0
+
+  rectangle "PATCH  /api/solicitudes/{id}/estado\n─────────────────────────────────────────────\nBody:     { nuevoEstado, observaciones }\nResponse: 200: SolicitudDTO  |  409\nRoles:    RESPONSABLE / ADMIN\nRF:       RF-04" as sol_estado #FFE0C0
+
+  rectangle "PATCH  /api/solicitudes/{id}/cerrar\n─────────────────────────────────────────────\nBody:     { observacionCierre }\nResponse: 200: SolicitudDTO  |  400  |  403\nRoles:    RESPONSABLE / ADMIN\nRF:       RF-08" as sol_cerrar #FFE0C0
+}
+
+' ─────────────────────────────────────────────
+' GRUPO: /api/solicitudes/{id}/historial
+' ─────────────────────────────────────────────
+package "/api/solicitudes/{id}/historial  —  Auditoría" <<Rectangle>> {
+  rectangle "GET  /api/solicitudes/{id}/historial\n─────────────────────────────────────────────\nParams:   —\nResponse: 200: List<HistorialDTO>  |  404\nRoles:    RESPONSABLE / ADMIN\nRF:       RF-06" as historial_get #DCEEFF
+}
+
+' ─────────────────────────────────────────────
+' GRUPO: /api/usuarios
+' ─────────────────────────────────────────────
+package "/api/usuarios  —  Gestión de Usuarios" <<Rectangle>> {
+  rectangle "POST  /api/usuarios\n─────────────────────────────────────────────\nBody:     { nombre, apellido, correo, identificacion, rol }\nResponse: 201: UsuarioDTO  |  409\nRoles:    ADMIN\nRF:       RF-13" as usr_post #DCEEFF
+
+  rectangle "GET  /api/usuarios/responsables\n─────────────────────────────────────────────\nParams:   ?activo=true\nResponse: 200: List<UsuarioDTO>\nRoles:    ADMIN\nRF:       RF-05" as usr_resp #DCEEFF
+
+  rectangle "PATCH  /api/usuarios/{id}/estado\n─────────────────────────────────────────────\nBody:     { activo: Boolean }\nResponse: 200: UsuarioDTO\nRoles:    ADMIN\nRF:       RF-13" as usr_estado #FFE0C0
+}
+
+' ─────────────────────────────────────────────
+' GRUPO: /api/ia  (OPCIONAL)
+' ─────────────────────────────────────────────
+package "/api/ia  —  Asistencia IA  (Opcional: RF-09, RF-10, RF-11)" <<Rectangle>> {
+  rectangle "POST  /api/ia/sugerir\n─────────────────────────────────────────────\nBody:     { descripcion }\nResponse: 200: {tipoSugerido, prioridadSugerida}  |  503\nRoles:    RESPONSABLE / ADMIN\nRF:       RF-10" as ia_sugerir #E8DAFF
+
+  rectangle "POST  /api/ia/resumen/{id}\n─────────────────────────────────────────────\nBody:     —\nResponse: 200: {resumen: String}  |  503\nRoles:    RESPONSABLE / ADMIN\nRF:       RF-09" as ia_resumen #E8DAFF
+}
+
+' ─────────────────────────────────────────────
+' NOTA GLOBAL
+' ─────────────────────────────────────────────
+note as nota_global
+  * ESTUDIANTE solo puede consultar sus propias solicitudes (GET /solicitudes/{id}).
+  * Todos los endpoints protegidos requieren: Authorization: Bearer <JWT>
+  * 503 en /api/ia/* indica servicio IA no disponible — el sistema continúa operando (RF-11).
+  * 409 Conflict indica transición de estado inválida según la máquina de estados.
+end note
+
+@enduml

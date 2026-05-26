@@ -1,0 +1,146 @@
+@startuml diagrama1_modelo_dominio
+title Modelo de Dominio — Sistema de Triage Académico\nProgramación Avanzada · Universidad del Quindío · Hito 1
+
+skinparam classBackgroundColor #EBF5FB
+skinparam classBorderColor #444444
+skinparam classHeaderBackgroundColor #1B4F8A
+skinparam classFontColor white
+skinparam classFontSize 13
+skinparam classAttributeFontSize 11
+skinparam stereotypeCBackgroundColor #2E6B3E
+skinparam stereotypeCFontColor white
+skinparam ArrowColor #1B4F8A
+skinparam ArrowFontSize 11
+skinparam linetype ortho
+
+' ─────────────────────────────────────────────
+' ENUMERACIONES
+' ─────────────────────────────────────────────
+enum EstadoSolicitud {
+  REGISTRADA
+  CLASIFICADA
+  EN_ATENCION
+  ATENDIDA
+  CERRADA
+}
+
+enum TipoSolicitud {
+  REGISTRO_ASIGNATURAS
+  HOMOLOGACION
+  CANCELACION_ASIGNATURA
+  SOLICITUD_CUPOS
+  CONSULTA_ACADEMICA
+  OTRO
+}
+
+enum Prioridad {
+  BAJA
+  MEDIA
+  ALTA
+  CRITICA
+}
+
+enum CanalOrigen {
+  CSU
+  CORREO
+  SAC
+  TELEFONICO
+  PRESENCIAL
+}
+
+enum RolUsuario {
+  ESTUDIANTE
+  RESPONSABLE
+  ADMIN
+}
+
+' ─────────────────────────────────────────────
+' CLASES
+' ─────────────────────────────────────────────
+class Usuario {
+  - id : Long
+  - nombre : String
+  - apellido : String
+  - correo : String
+  - identificacion : String
+  - rol : RolUsuario
+  - activo : Boolean
+  --
+  + esResponsable() : Boolean
+  + estaActivo() : Boolean
+}
+
+class Solicitud {
+  - id : Long
+  - descripcion : String
+  - fechaRegistro : LocalDateTime
+  - estado : EstadoSolicitud
+  - tipo : TipoSolicitud
+  - prioridad : Prioridad
+  - canalOrigen : CanalOrigen
+  - justificacionPrioridad : String
+  - observacionCierre : String
+  --
+  + registrar() : void
+  + clasificar(tipo : TipoSolicitud) : void
+  + asignarResponsable(u : Usuario) : void
+  + cambiarEstado(e : EstadoSolicitud) : void
+  + cerrar(obs : String) : void
+  + puedeModificarse() : Boolean
+}
+
+class HistorialSolicitud {
+  - id : Long
+  - fechaAccion : LocalDateTime
+  - accionRealizada : String
+  - observaciones : String
+  --
+  + registrarAccion() : void
+}
+
+class ReglasPriorizacion {
+  - id : Long
+  - tipoSolicitud : TipoSolicitud
+  - prioridadBase : Prioridad
+  - descripcion : String
+  - activa : Boolean
+  --
+  + calcularPrioridad(s : Solicitud) : Prioridad
+}
+
+class SugerenciaIA {
+  - id : Long
+  - tipoSugerido : TipoSolicitud
+  - prioridadSugerida : Prioridad
+  - resumenGenerado : String
+  - confirmada : Boolean
+  - fechaSugerencia : LocalDateTime
+  --
+  + confirmar() : void
+  + rechazar() : void
+}
+
+' ─────────────────────────────────────────────
+' RELACIONES
+' ─────────────────────────────────────────────
+Usuario "1" --> "N" Solicitud : registra\n(solicitante)
+Usuario "1" --> "0..N" Solicitud : atiende\n(responsable)
+
+Solicitud "1" *-- "N" HistorialSolicitud : historial\n(composición)
+
+HistorialSolicitud "N" --> "1" Usuario : ejecuta acción
+
+Solicitud "1" ..> "0..1" SugerenciaIA : sugerencia\n(opcional)
+
+Solicitud "N" ..> "1" ReglasPriorizacion : usa reglas
+
+' ─────────────────────────────────────────────
+' DEPENDENCIAS DE ENUMS (uso de tipos)
+' ─────────────────────────────────────────────
+Solicitud ..> EstadoSolicitud
+Solicitud ..> TipoSolicitud
+Solicitud ..> Prioridad
+Solicitud ..> CanalOrigen
+Usuario   ..> RolUsuario
+
+@enduml

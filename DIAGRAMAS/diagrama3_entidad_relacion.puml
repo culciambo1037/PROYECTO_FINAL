@@ -1,0 +1,102 @@
+@startuml diagrama3_entidad_relacion
+title Modelo Entidad-Relación — Sistema de Triage Académico (MariaDB)\nProgramación Avanzada · Universidad del Quindío · Hito 1
+
+skinparam linetype ortho
+skinparam entity {
+  BackgroundColor #EBF5FB
+  BorderColor #444444
+  HeaderBackgroundColor #1B4F8A
+  FontColor white
+  FontSize 13
+  AttributeFontSize 11
+}
+skinparam ArrowColor #1B4F8A
+skinparam ArrowFontSize 11
+
+' ─────────────────────────────────────────────
+' TABLA: usuario
+' ─────────────────────────────────────────────
+entity "usuario" as usuario {
+  * id : BIGINT <<PK, AUTO_INC>>
+  --
+  nombre          : VARCHAR(100)   NOT NULL
+  apellido        : VARCHAR(100)   NOT NULL
+  correo          : VARCHAR(150)   NOT NULL UNIQUE
+  identificacion  : VARCHAR(20)    NOT NULL UNIQUE
+  password_hash   : VARCHAR(255)   NOT NULL
+  rol             : ENUM           NOT NULL
+  activo          : TINYINT(1)     DEFAULT 1
+  fecha_creacion  : DATETIME       DEFAULT NOW()
+}
+
+' ─────────────────────────────────────────────
+' TABLA: solicitud
+' ─────────────────────────────────────────────
+entity "solicitud" as solicitud {
+  * id                    : BIGINT       <<PK, AUTO_INC>>
+  --
+  descripcion             : TEXT         NOT NULL
+  canal_origen            : ENUM         NOT NULL
+  estado                  : ENUM         DEFAULT 'REGISTRADA'
+  tipo_solicitud          : ENUM         NOT NULL
+  prioridad               : ENUM         DEFAULT 'MEDIA'
+  justificacion_prioridad : VARCHAR(255) NOT NULL
+  observacion_cierre      : TEXT         NULLABLE
+  fecha_registro          : DATETIME     DEFAULT NOW()
+  fecha_cierre            : DATETIME     NULLABLE
+  # solicitante_id        : BIGINT       <<FK → usuario>>
+  # responsable_id        : BIGINT       <<FK → usuario, NULLABLE>>
+}
+
+' ─────────────────────────────────────────────
+' TABLA: historial_solicitud
+' ─────────────────────────────────────────────
+entity "historial_solicitud" as historial {
+  * id               : BIGINT       <<PK, AUTO_INC>>
+  --
+  accion_realizada   : VARCHAR(255) NOT NULL
+  observaciones      : TEXT         NOT NULL
+  fecha_accion       : DATETIME     DEFAULT NOW()
+  # solicitud_id     : BIGINT       <<FK → solicitud>>
+  # usuario_id       : BIGINT       <<FK → usuario>>
+}
+
+' ─────────────────────────────────────────────
+' TABLA: regla_priorizacion
+' ─────────────────────────────────────────────
+entity "regla_priorizacion" as regla {
+  * id             : BIGINT       <<PK, AUTO_INC>>
+  --
+  tipo_solicitud   : ENUM         NOT NULL
+  prioridad_base   : ENUM         NOT NULL
+  descripcion      : VARCHAR(255) NOT NULL
+  activa           : TINYINT(1)   DEFAULT 1
+}
+
+' ─────────────────────────────────────────────
+' TABLA: sugerencia_ia
+' ─────────────────────────────────────────────
+entity "sugerencia_ia" as sugerencia {
+  * id                 : BIGINT     <<PK, AUTO_INC>>
+  --
+  tipo_sugerido        : ENUM       NOT NULL
+  prioridad_sugerida   : ENUM       NOT NULL
+  resumen_generado     : TEXT       NULLABLE
+  confirmada           : TINYINT(1) DEFAULT 0
+  fecha_sugerencia     : DATETIME   DEFAULT NOW()
+  # solicitud_id       : BIGINT     <<FK UNIQUE → solicitud>>
+}
+
+' ─────────────────────────────────────────────
+' RELACIONES
+' ─────────────────────────────────────────────
+usuario    ||--o{  solicitud  : "registra\n(solicitante_id)"
+usuario    ||--o{  solicitud  : "atiende\n(responsable_id)"
+
+solicitud  ||--|{  historial  : "tiene historial\n(1:N)"
+
+historial  }o--||  usuario    : "ejecuta acción\n(N:1)"
+
+solicitud  ||--o|  sugerencia : "sugerencia\n(0..1, opcional)"
+
+@enduml

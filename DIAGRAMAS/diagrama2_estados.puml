@@ -1,0 +1,99 @@
+@startuml diagrama2_estados
+title Diagrama de Estados — Ciclo de Vida de una Solicitud\nProgramación Avanzada · Universidad del Quindío · Hito 1
+
+skinparam state {
+  BackgroundColor #EBF5FB
+  BorderColor #444444
+  FontSize 13
+  ArrowColor #333333
+  ArrowFontSize 11
+  StartColor #111111
+  EndColor #111111
+}
+
+skinparam note {
+  BackgroundColor #FFFDE7
+  BorderColor #F9A825
+  FontSize 11
+}
+
+' ─────────────────────────────────────────────
+' ESTADOS
+' ─────────────────────────────────────────────
+[*] --> REGISTRADA : Solicitud enviada\n[datos completos]\n«ESTUDIANTE / RESPONSABLE / ADMIN»
+
+state REGISTRADA {
+  [*] --> ok
+  ok : RF-01 · Datos recibidos\ncentraliza múltiples canales
+}
+
+state CLASIFICADA {
+  [*] --> ok2
+  ok2 : RF-02, RF-03 · Tipo diferenciado\n+ prioridad justificada
+}
+
+state EN_ATENCION {
+  [*] --> ok3
+  ok3 : RF-05 · Responsable activo\nasignado + historial registrado
+}
+
+state ATENDIDA {
+  [*] --> ok4
+  ok4 : RF-08 · Solución registrada\nantes de cierre formal
+}
+
+state CERRADA {
+  [*] --> ok5
+  ok5 : RF-08 · Estado FINAL e INMUTABLE\nNo permite modificaciones
+}
+
+' ─────────────────────────────────────────────
+' TRANSICIONES PRINCIPALES (flujo hacia adelante)
+' ─────────────────────────────────────────────
+REGISTRADA  --> CLASIFICADA  : clasificar()\n[tipo y canal válidos]\n«RESPONSABLE / ADMIN»
+CLASIFICADA --> EN_ATENCION  : asignarResponsable()\n[responsable activo asignado]\n«RESPONSABLE / ADMIN»
+EN_ATENCION --> ATENDIDA     : marcarAtendida()\n[solución registrada]\n«RESPONSABLE»
+ATENDIDA    --> CERRADA      : cerrar(observacion)\n[observación de cierre presente]\n«RESPONSABLE / ADMIN»
+
+CERRADA --> [*]
+
+' ─────────────────────────────────────────────
+' TRANSICIONES DE RETROCESO (solo ADMIN)
+' ─────────────────────────────────────────────
+CLASIFICADA --> REGISTRADA  : devolver()\n[información incompleta]\n«ADMIN»
+EN_ATENCION --> CLASIFICADA : reasignar()\n[nueva asignación requerida]\n«ADMIN»
+
+' ─────────────────────────────────────────────
+' NOTAS EXPLICATIVAS
+' ─────────────────────────────────────────────
+note right of REGISTRADA
+  RF-01: Se almacenan descripción,
+  tipo, canal, fecha/hora e
+  identificación del solicitante.
+end note
+
+note right of CLASIFICADA
+  RF-02+RF-03: Se asigna TipoSolicitud
+  y Prioridad con justificación.
+  IA puede sugerir (RF-10, opcional).
+end note
+
+note right of EN_ATENCION
+  RF-05: El responsable debe
+  estar activo. La asignación
+  queda registrada en historial (RF-06).
+end note
+
+note right of ATENDIDA
+  RF-08: Requisito previo obligatorio
+  antes de poder cerrar
+  la solicitud.
+end note
+
+note right of CERRADA
+  RF-08: Estado FINAL e INMUTABLE.
+  No permite modificaciones.
+  Requiere observación de cierre.
+end note
+
+@enduml
