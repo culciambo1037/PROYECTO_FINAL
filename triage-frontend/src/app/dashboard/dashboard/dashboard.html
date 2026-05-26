@@ -1,131 +1,87 @@
-<mat-sidenav-container class="sidenav-container">
+<div class="content-area">
 
-  <!-- Sidebar -->
-  <mat-sidenav mode="side" opened class="sidenav">
-    <div class="sidenav-header">
-      <mat-icon class="logo-icon">school</mat-icon>
-      <h2>Triage Académico</h2>
-      <p>UniQuindío</p>
+  <h1 class="welcome">Bienvenido, {{ nombre }}</h1>
+
+  <!-- Cards de estadísticas -->
+  @if (!authService.isEstudiante()) {
+    <div class="stats-grid">
+
+      <mat-card class="stat-card total">
+        <mat-card-content>
+          <mat-icon>list_alt</mat-icon>
+          <div class="stat-info">
+            <span class="stat-number">{{ stats.total }}</span>
+            <span class="stat-label">Total solicitudes</span>
+          </div>
+        </mat-card-content>
+      </mat-card>
+
+      <mat-card class="stat-card registradas">
+        <mat-card-content>
+          <mat-icon>pending</mat-icon>
+          <div class="stat-info">
+            <span class="stat-number">{{ stats.registradas }}</span>
+            <span class="stat-label">Registradas</span>
+          </div>
+        </mat-card-content>
+      </mat-card>
+
+      <mat-card class="stat-card atencion">
+        <mat-card-content>
+          <mat-icon>engineering</mat-icon>
+          <div class="stat-info">
+            <span class="stat-number">{{ stats.enAtencion }}</span>
+            <span class="stat-label">En atención</span>
+          </div>
+        </mat-card-content>
+      </mat-card>
+
+      <mat-card class="stat-card cerradas">
+        <mat-card-content>
+          <mat-icon>check_circle</mat-icon>
+          <div class="stat-info">
+            <span class="stat-number">{{ stats.cerradas }}</span>
+            <span class="stat-label">Cerradas</span>
+          </div>
+        </mat-card-content>
+      </mat-card>
+
     </div>
+  }
 
-    <mat-nav-list>
-      @for (item of menuItems; track item.ruta) {
-        @if (item.visible) {
-          <mat-list-item (click)="navegar(item.ruta)" class="nav-item">
-            <mat-icon matListItemIcon>{{ item.icon }}</mat-icon>
-            <span matListItemTitle>{{ item.label }}</span>
-          </mat-list-item>
-        }
+  <!-- Acciones rápidas -->
+  <div class="acciones">
+    <h2>Acciones rápidas</h2>
+    <div class="acciones-grid">
+
+      @if (authService.isEstudiante()) {
+        <mat-card class="accion-card" (click)="navegar('/solicitudes/nueva')">
+          <mat-card-content>
+            <mat-icon>add_circle</mat-icon>
+            <p>Nueva solicitud</p>
+          </mat-card-content>
+        </mat-card>
       }
-    </mat-nav-list>
 
-    <div class="sidenav-footer">
-      <mat-list-item (click)="cerrarSesion()" class="nav-item logout">
-        <mat-icon matListItemIcon>logout</mat-icon>
-        <span matListItemTitle>Cerrar sesión</span>
-      </mat-list-item>
-    </div>
-  </mat-sidenav>
-
-  <!-- Contenido principal -->
-  <mat-sidenav-content class="main-content">
-
-    <!-- Toolbar -->
-    <mat-toolbar color="primary" class="toolbar">
-      <span class="toolbar-title">Dashboard</span>
-      <span class="spacer"></span>
-      <mat-icon>account_circle</mat-icon>
-      <span class="user-name">{{ nombre }}</span>
-      <span class="rol-badge">{{ rol }}</span>
-    </mat-toolbar>
-
-    <!-- Contenido -->
-    <div class="content-area">
-
-      <h1 class="welcome">Bienvenido, {{ nombre }}</h1>
-
-      <!-- Cards de estadísticas (solo para ADMIN y RESPONSABLE) -->
       @if (!authService.isEstudiante()) {
-        <div class="stats-grid">
-
-          <mat-card class="stat-card total">
-            <mat-card-content>
-              <mat-icon>list_alt</mat-icon>
-              <div class="stat-info">
-                <span class="stat-number">{{ stats.total }}</span>
-                <span class="stat-label">Total solicitudes</span>
-              </div>
-            </mat-card-content>
-          </mat-card>
-
-          <mat-card class="stat-card registradas">
-            <mat-card-content>
-              <mat-icon>pending</mat-icon>
-              <div class="stat-info">
-                <span class="stat-number">{{ stats.registradas }}</span>
-                <span class="stat-label">Registradas</span>
-              </div>
-            </mat-card-content>
-          </mat-card>
-
-          <mat-card class="stat-card atencion">
-            <mat-card-content>
-              <mat-icon>engineering</mat-icon>
-              <div class="stat-info">
-                <span class="stat-number">{{ stats.enAtencion }}</span>
-                <span class="stat-label">En atención</span>
-              </div>
-            </mat-card-content>
-          </mat-card>
-
-          <mat-card class="stat-card cerradas">
-            <mat-card-content>
-              <mat-icon>check_circle</mat-icon>
-              <div class="stat-info">
-                <span class="stat-number">{{ stats.cerradas }}</span>
-                <span class="stat-label">Cerradas</span>
-              </div>
-            </mat-card-content>
-          </mat-card>
-
-        </div>
+        <mat-card class="accion-card" (click)="navegar('/solicitudes')">
+          <mat-card-content>
+            <mat-icon>list_alt</mat-icon>
+            <p>Ver solicitudes</p>
+          </mat-card-content>
+        </mat-card>
       }
 
-      <!-- Acciones rápidas -->
-      <div class="acciones">
-        <h2>Acciones rápidas</h2>
-        <div class="acciones-grid">
-
-          @if (authService.isEstudiante()) {
-            <mat-card class="accion-card" (click)="navegar('/solicitudes/nueva')">
-              <mat-card-content>
-                <mat-icon>add_circle</mat-icon>
-                <p>Nueva solicitud</p>
-              </mat-card-content>
-            </mat-card>
-          }
-
-          @if (!authService.isEstudiante()) {
-            <mat-card class="accion-card" (click)="navegar('/solicitudes')">
-              <mat-card-content>
-                <mat-icon>list_alt</mat-icon>
-                <p>Ver solicitudes</p>
-              </mat-card-content>
-            </mat-card>
-          }
-
-          @if (authService.isAdmin()) {
-            <mat-card class="accion-card" (click)="navegar('/usuarios')">
-              <mat-card-content>
-                <mat-icon>people</mat-icon>
-                <p>Gestionar usuarios</p>
-              </mat-card-content>
-            </mat-card>
-          }
-
-        </div>
-      </div>
+      @if (authService.isAdmin()) {
+        <mat-card class="accion-card" (click)="navegar('/usuarios')">
+          <mat-card-content>
+            <mat-icon>people</mat-icon>
+            <p>Gestionar usuarios</p>
+          </mat-card-content>
+        </mat-card>
+      }
 
     </div>
-  </mat-sidenav-content>
-</mat-sidenav-container>
+  </div>
+
+</div>

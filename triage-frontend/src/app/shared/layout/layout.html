@@ -1,0 +1,43 @@
+<mat-sidenav-container class="sidenav-container">
+
+  <!-- Sidebar -->
+  <mat-sidenav mode="side" opened class="sidenav">
+    <div class="sidenav-header">
+      <mat-icon class="logo-icon">school</mat-icon>
+      <h2>Triage Académico</h2>
+      <p>UniQuindío</p>
+    </div>
+
+    <mat-nav-list>
+      @for (item of menuItems; track item.ruta) {
+        @if (item.visible) {
+          <mat-list-item (click)="navegar(item.ruta)" class="nav-item">
+            <mat-icon matListItemIcon>{{ item.icon }}</mat-icon>
+            <span matListItemTitle>{{ item.label }}</span>
+          </mat-list-item>
+        }
+      }
+    </mat-nav-list>
+
+    <div class="sidenav-footer">
+      <mat-list-item (click)="cerrarSesion()" class="nav-item logout">
+        <mat-icon matListItemIcon>logout</mat-icon>
+        <span matListItemTitle>Cerrar sesión</span>
+      </mat-list-item>
+    </div>
+  </mat-sidenav>
+
+  <!-- Contenido -->
+  <mat-sidenav-content class="main-content">
+    <mat-toolbar color="primary" class="toolbar">
+      <span class="spacer"></span>
+      <mat-icon>account_circle</mat-icon>
+      <span class="user-name">{{ nombre }}</span>
+      <span class="rol-badge">{{ rol }}</span>
+    </mat-toolbar>
+    <div class="page-content">
+      <router-outlet />
+    </div>
+  </mat-sidenav-content>
+
+</mat-sidenav-container>
