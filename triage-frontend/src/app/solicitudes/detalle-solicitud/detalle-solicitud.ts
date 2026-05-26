@@ -53,6 +53,8 @@ export class DetalleSolicitud implements OnInit {
   responsables: Usuario[] = [];
   cargando = true;
   guardando = false;
+  resumenIA: string | null = null;
+  cargandoResumen = false;
 
   formClasificar: FormGroup;
   formAsignar: FormGroup;
@@ -117,6 +119,25 @@ export class DetalleSolicitud implements OnInit {
     });
   }
 
+  generarResumen(): void {
+    if (!this.solicitud) return;
+    this.cargandoResumen = true;
+    this.resumenIA = null;
+
+    this.solicitudService.generarResumen(this.solicitud.id).subscribe({
+      next: r => {
+        this.resumenIA = r.resumen;
+        this.cargandoResumen = false;
+        this.cdr.detectChanges();
+      },
+      error: () => {
+        this.cargandoResumen = false;
+        this.cdr.detectChanges();
+        this.mostrarMensaje('Error al generar resumen');
+      }
+    });
+  }
+  
   cargarHistorial(id: string): void {
     this.solicitudService.obtenerHistorial(id).subscribe({
       next: h => {

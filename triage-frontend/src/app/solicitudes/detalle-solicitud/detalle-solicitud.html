@@ -1,18 +1,5 @@
 <div class="page-container">
 
-  <mat-toolbar color="primary">
-    <button mat-icon-button (click)="volver()">
-      <mat-icon>arrow_back</mat-icon>
-    </button>
-    <span>Detalle de Solicitud</span>
-    @if (solicitud) {
-      <span class="spacer"></span>
-      <span class="chip" [class]="colorEstado(solicitud.estado)">
-        {{ solicitud.estado }}
-      </span>
-    }
-  </mat-toolbar>
-
   @if (cargando) {
     <div class="spinner-container">
       <mat-spinner></mat-spinner>
@@ -21,6 +8,14 @@
 
   @if (!cargando && solicitud) {
     <div class="content">
+
+      <!-- Cabecera -->
+      <div class="detalle-header">
+        <h2>Detalle de Solicitud</h2>
+        <span class="chip" [class]="colorEstado(solicitud.estado)">
+          {{ solicitud.estado }}
+        </span>
+      </div>
 
       <!-- Info principal -->
       <mat-card class="info-card">
@@ -95,7 +90,6 @@
           </mat-card-header>
           <mat-card-content>
 
-            <!-- Clasificar -->
             @if (puedeClasificar()) {
               <mat-expansion-panel>
                 <mat-expansion-panel-header>
@@ -115,8 +109,7 @@
                   </mat-form-field>
                   <mat-form-field appearance="outline" class="full-width">
                     <mat-label>Justificación de prioridad</mat-label>
-                    <textarea matInput formControlName="justificacionPrioridad"
-                              rows="3"></textarea>
+                    <textarea matInput formControlName="justificacionPrioridad" rows="3"></textarea>
                   </mat-form-field>
                   <button mat-raised-button color="primary"
                           (click)="clasificar()" [disabled]="guardando">
@@ -126,7 +119,6 @@
               </mat-expansion-panel>
             }
 
-            <!-- Asignar -->
             @if (puedeAsignar()) {
               <mat-expansion-panel>
                 <mat-expansion-panel-header>
@@ -154,7 +146,6 @@
               </mat-expansion-panel>
             }
 
-            <!-- Cambiar estado -->
             @if (puedeCambiarEstado()) {
               <mat-expansion-panel>
                 <mat-expansion-panel-header>
@@ -184,7 +175,6 @@
               </mat-expansion-panel>
             }
 
-            <!-- Cerrar -->
             @if (puedeCerrar()) {
               <mat-expansion-panel>
                 <mat-expansion-panel-header>
@@ -196,8 +186,7 @@
                 <form [formGroup]="formCerrar">
                   <mat-form-field appearance="outline" class="full-width">
                     <mat-label>Observación de cierre</mat-label>
-                    <textarea matInput formControlName="observacionCierre"
-                              rows="3"></textarea>
+                    <textarea matInput formControlName="observacionCierre" rows="3"></textarea>
                   </mat-form-field>
                   <button mat-raised-button color="warn"
                           (click)="cerrar()" [disabled]="guardando">
@@ -210,6 +199,42 @@
           </mat-card-content>
         </mat-card>
       }
+
+      <!-- Resumen IA -->
+      <mat-card class="resumen-card">
+        <mat-card-header>
+          <mat-card-title>
+            <mat-icon color="accent">auto_awesome</mat-icon>
+            Asistente IA
+          </mat-card-title>
+        </mat-card-header>
+        <mat-card-content>
+          @if (!resumenIA && !cargandoResumen) {
+            <button mat-stroked-button color="accent"
+                    (click)="generarResumen()" type="button">
+              <mat-icon>summarize</mat-icon>
+              Generar resumen con IA
+            </button>
+          }
+          @if (cargandoResumen) {
+            <div class="resumen-cargando">
+              <mat-spinner diameter="24"></mat-spinner>
+              <span>Generando resumen...</span>
+            </div>
+          }
+          @if (resumenIA) {
+            <div class="resumen-texto">
+              <mat-icon color="accent">auto_awesome</mat-icon>
+              <p>{{ resumenIA }}</p>
+            </div>
+            <button mat-stroked-button color="accent"
+                    (click)="generarResumen()" type="button">
+              <mat-icon>refresh</mat-icon>
+              Regenerar
+            </button>
+          }
+        </mat-card-content>
+      </mat-card>
 
       <!-- Historial -->
       <mat-card class="historial-card">

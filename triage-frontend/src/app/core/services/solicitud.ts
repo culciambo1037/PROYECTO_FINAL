@@ -20,6 +20,14 @@ export class SolicitudService {
     return this.http.post<Solicitud>(this.apiUrl, request);
   }
 
+  sugerirIA(descripcion: string): Observable<any> {
+    return this.http.post<any>(`${environment.apiUrl}/ia/sugerir`, { descripcion });
+  }
+
+  generarResumen(id: string): Observable<any> {
+    return this.http.post<any>(`${environment.apiUrl}/ia/resumen/${id}`, {});
+  }
+
   listar(filtros: any = {}): Observable<PageSolicitud> {
     let params = new HttpParams();
     if (filtros.estado)       params = params.set('estado', filtros.estado);

@@ -1,12 +1,5 @@
 <div class="page-container">
 
-  <mat-toolbar color="primary">
-    <button mat-icon-button (click)="volver()">
-      <mat-icon>arrow_back</mat-icon>
-    </button>
-    <span>Nueva Solicitud</span>
-  </mat-toolbar>
-
   <div class="content">
     <mat-card>
       <mat-card-header>
@@ -30,16 +23,6 @@
           </mat-form-field>
 
           <mat-form-field appearance="outline" class="full-width">
-            <mat-label>Tipo de solicitud</mat-label>
-            <mat-select formControlName="tipoSolicitud">
-              @for (t of tipos; track t.valor) {
-                <mat-option [value]="t.valor">{{ t.label }}</mat-option>
-              }
-            </mat-select>
-            <mat-error>Seleccione un tipo</mat-error>
-          </mat-form-field>
-
-          <mat-form-field appearance="outline" class="full-width">
             <mat-label>Canal de origen</mat-label>
             <mat-select formControlName="canalOrigen">
               @for (c of canales; track c.valor) {
@@ -49,10 +32,12 @@
             <mat-error>Seleccione un canal</mat-error>
           </mat-form-field>
 
+          <!-- Descripción + botón IA -->
           <mat-form-field appearance="outline" class="full-width">
             <mat-label>Descripción</mat-label>
             <textarea matInput formControlName="descripcion"
-                      rows="5" placeholder="Describa su solicitud detalladamente...">
+                      rows="5"
+                      placeholder="Describa su solicitud detalladamente...">
             </textarea>
             <mat-hint>Mínimo 10 caracteres, máximo 2000</mat-hint>
             <mat-error *ngIf="form.get('descripcion')?.hasError('required')">
@@ -63,13 +48,65 @@
             </mat-error>
           </mat-form-field>
 
+          <!-- Botón sugerencia IA -->
+          <div class="ia-section">
+            <button mat-stroked-button color="accent"
+                    type="button"
+                    (click)="sugerirConIA()"
+                    [disabled]="sugiriendoIA">
+              @if (sugiriendoIA) {
+                <mat-spinner diameter="18"></mat-spinner>
+              } @else {
+                <mat-icon>auto_awesome</mat-icon>
+              }
+              Sugerir con IA
+            </button>
+
+            <!-- Resultado sugerencia -->
+            @if (sugerenciaIA) {
+              <mat-card class="sugerencia-card">
+                <mat-card-content>
+                  <div class="sugerencia-header">
+                    <mat-icon color="accent">auto_awesome</mat-icon>
+                    <span>Sugerencia de IA</span>
+                  </div>
+                  <div class="sugerencia-chips">
+                    <span class="chip tipo">{{ sugerenciaIA.tipoSugerido }}</span>
+                    <span class="chip prioridad">{{ sugerenciaIA.prioridadSugerida }}</span>
+                  </div>
+                  <p class="sugerencia-nota">
+                    Esta es una sugerencia — puedes aceptarla o elegir manualmente.
+                  </p>
+                  <button mat-raised-button color="accent"
+                          type="button"
+                          (click)="aplicarSugerencia()">
+                    Aplicar sugerencia
+                  </button>
+                </mat-card-content>
+              </mat-card>
+            }
+          </div>
+
+          <mat-divider class="divider"></mat-divider>
+
+          <mat-form-field appearance="outline" class="full-width">
+            <mat-label>Tipo de solicitud</mat-label>
+            <mat-select formControlName="tipoSolicitud">
+              @for (t of tipos; track t.valor) {
+                <mat-option [value]="t.valor">{{ t.label }}</mat-option>
+              }
+            </mat-select>
+            <mat-error>Seleccione un tipo</mat-error>
+          </mat-form-field>
+
         </form>
       </mat-card-content>
 
       <mat-card-actions>
         <button mat-button (click)="volver()">Cancelar</button>
         <button mat-raised-button color="primary"
-                (click)="crear()" [disabled]="guardando || form.invalid">
+                (click)="crear()"
+                [disabled]="guardando || form.invalid">
           @if (guardando) {
             <mat-spinner diameter="20"></mat-spinner>
           } @else {

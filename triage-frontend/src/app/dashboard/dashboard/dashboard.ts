@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, RouterModule } from '@angular/router';
 import { MatToolbarModule } from '@angular/material/toolbar';
@@ -10,6 +10,7 @@ import { MatListModule } from '@angular/material/list';
 import { MatMenuModule } from '@angular/material/menu';
 import { AuthService } from '../../core/services/auth';
 import { SolicitudService } from '../../core/services/solicitud';
+
 
 @Component({
   selector: 'app-dashboard',
@@ -44,7 +45,8 @@ export class Dashboard implements OnInit {
   constructor(
     public authService: AuthService,
     private solicitudService: SolicitudService,
-    private router: Router
+    private router: Router,
+    private cdr: ChangeDetectorRef
   ) {}
 
   ngOnInit(): void {
@@ -71,15 +73,19 @@ export class Dashboard implements OnInit {
 
     this.solicitudService.listar({ size: 1 }).subscribe(page => {
       this.stats.total = page.totalElements;
+      this.cdr.detectChanges();
     });
     this.solicitudService.listar({ estado: 'REGISTRADA', size: 1 }).subscribe(page => {
       this.stats.registradas = page.totalElements;
+      this.cdr.detectChanges();
     });
     this.solicitudService.listar({ estado: 'EN_ATENCION', size: 1 }).subscribe(page => {
       this.stats.enAtencion = page.totalElements;
+      this.cdr.detectChanges();
     });
     this.solicitudService.listar({ estado: 'CERRADA', size: 1 }).subscribe(page => {
       this.stats.cerradas = page.totalElements;
+      this.cdr.detectChanges();
     });
   }
 

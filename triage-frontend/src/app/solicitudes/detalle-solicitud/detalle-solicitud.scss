@@ -119,3 +119,49 @@
   &.prioridad-alta    { background: #FFF8E1; color: #F57F17; }
   &.prioridad-critica { background: #FFEBEE; color: #C62828; }
 }
+
+.resumen-card {
+  mat-card-title {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .resumen-cargando {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    color: #666;
+  }
+
+  .resumen-texto {
+    display: flex;
+    gap: 12px;
+    background: #F3E5F5;
+    padding: 16px;
+    border-radius: 8px;
+    margin-bottom: 12px;
+
+    mat-icon { color: #7B1FA2; flex-shrink: 0; }
+
+    p {
+      margin: 0;
+      color: #333;
+      line-height: 1.6;
+    }
+  }
+}
+
+.detalle-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 16px;
+
+  h2 {
+    margin: 0;
+    font-size: 1.3rem;
+    font-weight: 600;
+    color: #1565C0;
+  }
+}

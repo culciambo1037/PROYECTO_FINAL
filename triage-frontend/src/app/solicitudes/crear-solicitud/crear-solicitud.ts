@@ -11,6 +11,8 @@ import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
+import { MatChipsModule } from '@angular/material/chips';
+import { MatDividerModule } from '@angular/material/divider';
 import { SolicitudService } from '../../core/services/solicitud';
 import { UsuarioService } from '../../core/services/usuario';
 import { AuthService } from '../../core/services/auth';
@@ -30,7 +32,9 @@ import { Usuario } from '../../core/models/usuario.model';
     MatInputModule,
     MatSelectModule,
     MatProgressSpinnerModule,
-    MatSnackBarModule
+    MatSnackBarModule,
+    MatChipsModule,
+    MatDividerModule
   ],
   templateUrl: './crear-solicitud.html',
   styleUrl: './crear-solicitud.scss'
@@ -39,22 +43,25 @@ export class CrearSolicitud implements OnInit {
 
   form: FormGroup;
   guardando = false;
+  sugiriendoIA = false;
   estudiantes: Usuario[] = [];
 
+  sugerenciaIA: any = null;
+
   tipos = [
-    { valor: 'REGISTRO_ASIGNATURAS', label: 'Registro de asignaturas' },
-    { valor: 'HOMOLOGACION', label: 'Homologación' },
+    { valor: 'REGISTRO_ASIGNATURAS',   label: 'Registro de asignaturas' },
+    { valor: 'HOMOLOGACION',           label: 'Homologación' },
     { valor: 'CANCELACION_ASIGNATURA', label: 'Cancelación de asignatura' },
-    { valor: 'SOLICITUD_CUPOS', label: 'Solicitud de cupos' },
-    { valor: 'CONSULTA_ACADEMICA', label: 'Consulta académica' },
-    { valor: 'OTRO', label: 'Otro' }
+    { valor: 'SOLICITUD_CUPOS',        label: 'Solicitud de cupos' },
+    { valor: 'CONSULTA_ACADEMICA',     label: 'Consulta académica' },
+    { valor: 'OTRO',                   label: 'Otro' }
   ];
 
   canales = [
-    { valor: 'CSU', label: 'CSU' },
-    { valor: 'CORREO', label: 'Correo electrónico' },
+    { valor: 'CSU',        label: 'CSU' },
+    { valor: 'CORREO',     label: 'Correo electrónico' },
     { valor: 'PRESENCIAL', label: 'Presencial' },
-    { valor: 'SAC', label: 'SAC' },
+    { valor: 'SAC',        label: 'SAC' },
     { valor: 'TELEFONICO', label: 'Telefónico' }
   ];
 
@@ -68,11 +75,11 @@ export class CrearSolicitud implements OnInit {
     private cdr: ChangeDetectorRef
   ) {
     this.form = this.fb.group({
-      descripcion: ['', [Validators.required, Validators.minLength(10),
-                         Validators.maxLength(2000)]],
-      tipoSolicitud: ['', Validators.required],
-      canalOrigen: ['', Validators.required],
-      solicitanteId: ['', Validators.required]
+      descripcion:    ['', [Validators.required, Validators.minLength(10),
+                            Validators.maxLength(2000)]],
+      tipoSolicitud:  ['', Validators.required],
+      canalOrigen:    ['', Validators.required],
+      solicitanteId:  ['', Validators.required]
     });
   }
 
@@ -88,6 +95,41 @@ export class CrearSolicitud implements OnInit {
       },
       error: () => {}
     });
+  }
+
+  sugerirConIA(): void {
+    const descripcion = this.form.get('descripcion')?.value;
+    if (!descripcion || descripcion.length < 10) {
+      this.snackBar.open('Escribe una descripción de al menos 10 caracteres primero',
+                         'Cerrar', { duration: 3000 });
+      return;
+    }
+
+    this.sugiriendoIA = true;
+    this.sugerenciaIA = null;
+
+    this.solicitudService.sugerirIA(descripcion).subscribe({
+      next: sugerencia => {
+        this.sugerenciaIA = sugerencia;
+        this.sugiriendoIA = false;
+        this.cdr.detectChanges();
+      },
+      error: () => {
+        this.sugiriendoIA = false;
+        this.snackBar.open('Error al obtener sugerencia de IA', 'Cerrar', { duration: 3000 });
+        this.cdr.detectChanges();
+      }
+    });
+  }
+
+  aplicarSugerencia(): void {
+    if (!this.sugerenciaIA) return;
+    this.form.patchValue({
+      tipoSolicitud: this.sugerenciaIA.tipoSugerido
+    });
+    this.snackBar.open('Sugerencia aplicada — puedes ajustarla antes de crear',
+                       'Cerrar', { duration: 3000 });
+    this.cdr.detectChanges();
   }
 
   crear(): void {
